@@ -1,0 +1,152 @@
+@using System.Text.Json
+@using System.Globalization
+
+@model List<StorageInfo>
+
+
+<body>
+    <form id="Storage" method="post" asp-action="SellInfo" asp-controller="Home">
+        <h3>Yakıt Satışı</h3>
+        <table style="width: 100%;">
+            @foreach (var fuel in Model)
+            {
+                <tr>
+                    <td style="width: 200px;">
+                        <b>@GetFuelName(fuel.GasType)</b>
+                    </td>
+                    <td style="width: 70%;">
+                        <div class="progress" style="height: 20px; background-color: #e0e0e0; ">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                style="width:@( (fuel.Occupancy / (double)fuel.TotalCapacity * 100).ToString(CultureInfo.InvariantCulture) )%;">
+                                @($"{(fuel.Occupancy / (double)fuel.TotalCapacity * 100):0.00}%")
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </table>
+
+        <br>
+
+        <div style="display: flex; justify-content: space-around; align-items: center;">
+            <h5>Yakıt tipini seçin</h5>
+            <select id="GasType" name="GasType" onchange="updateTotalPrice()">
+                <option value="0">Seçiniz</option>
+                <option value="1">Kurşunsuz Benzin 95</option>
+                <option value="2">Motorin</option>
+                <option value="3">Gazyağı</option>
+                <option value="4">Kurşunsuz Benzin 98</option>
+                <option value="5">Fuel Oil</option>
+            </select>
+
+            <h5>Kaç litre satılacak?</h5>
+            <input type="number" id="FuelAmount" name="SelledFuel" min="0" max="10000" step="0.01" oninput="updateTotalPrice()" />
+
+            <h5>Toplam Fiyat: <span id="TotalPrice">0</span> TL</h5>
+
+            <button type="submit" style="background-color: white; width: 100px;" onclick="listForSelledFuel(event)">Sat</button>
+        </div>
+
+        <div>
+            @if (ViewData["WarningMessage"] != null)
+            {
+                <div style="color: red; font-weight: bold; margin-bottom: 10px;">
+                    @ViewData["WarningMessage"]
+                </div>
+            }
+        </div>
+        
+    </form>
+    <br>
+        <div id="selledFuelList" style="margin-top: 20px;">
+        <h4>Satışı Yapılan Ürünler:</h4>
+        <ul id="fuelList">
+            @if (ViewData["SoldFuels"] != null && (ViewData["SoldFuels"] as List<SaleRecord>)?.Any() == true)
+            {
+                @foreach (var sale in ViewData["SoldFuels"] as List<SaleRecord> ?? new List<SaleRecord>())
+                {
+                    @if(@sale.GasType ==1){
+                        <li>Kurşunsuz Benzin 95 - @sale.SoldFuel L</li>
+                    }else if(@sale.GasType ==2){
+                        <li>Motorin - @sale.SoldFuel L</li>
+                    }else if(@sale.GasType ==3){
+                        <li>Gazyağı - @sale.SoldFuel L</li>
+                    }else if(@sale.GasType ==4){
+                        <li>Kurşunsuz Benzin 98 - @sale.SoldFuel L</li>
+                    }else if(@sale.GasType ==5){
+                        <li>Fuel Oil - @sale.SoldFuel L</li>
+                    }
+                }
+            }
+            else
+            {
+                <li>Henüz satış yapılmamış.</li>
+            }
+        </ul> 
+    </div>
+
+    <br>
+</body>
+
+
+@functions {
+    public string GetFuelName(int gasType)
+    {
+        return gasType switch
+        {
+            1 => "Kurşunsuz Benzin 95",
+            2 => "Motorin",
+            3 => "Gazyağı",
+            4 => "Kurşunsuz Benzin 98",
+            5 => "Fuel Oil",
+            _ => "Bilinmeyen Yakıt"
+        };
+    }
+}
+
+<script>
+    const fuelPrices = @Html.Raw(ViewData["FuelPricesJson"]);
+    let storageData = @Html.Raw(JsonSerializer.Serialize(Model.ToDictionary(s => s.GasType, s => s.Occupancy)));
+
+    function updateTotalPrice() {
+        const gasType = parseInt(document.getElementById("GasType").value);
+        const fuelAmount = parseFloat(document.getElementById("FuelAmount").value);
+
+        if (gasType > 0 && fuelAmount > 0 && fuelPrices[gasType] !== undefined) {
+            const pricePerLiter = fuelPrices[gasType];
+            const totalPrice = pricePerLiter * fuelAmount;
+            document.getElementById("TotalPrice").innerText = totalPrice.toFixed(2);
+        } else {
+            document.getElementById("TotalPrice").innerText = "0.00";
+        }
+    }
+
+    function listForSelledFuel(event) {
+        const gasType = parseInt(document.getElementById("GasType").value);
+        const fuelAmount = parseFloat(document.getElementById("FuelAmount").value);
+        const fuelList = document.getElementById("fuelList");
+
+        // Satılacak yakıt türü ve miktarı boş değilse listeye ekle
+        if (gasType > 0 && fuelAmount > 0) {
+            const fuelName = document.querySelector(`#GasType option[value='${gasType}']`).text;
+            const listItem = document.createElement("li");
+            listItem.textContent = `${fuelName} - ${fuelAmount} L`;
+            fuelList.appendChild(listItem);
+
+            // Satış işlemi yapılması
+            event.preventDefault(); // Formun varsayılan davranışını engelleme
+            document.getElementById("Storage").submit(); // Formu manuel olarak gönder
+        } else {
+            alert("Lütfen geçerli bir yakıt tipi ve miktar girin.");
+        }
+
+        // İşlem sonrası fiyat ve seçilen yakıtı sıfırla
+        document.getElementById("TotalPrice").innerText = "0.00";
+        document.getElementById("GasType").value = "0"; // Yakıt tipini sıfırlama
+        document.getElementById("FuelAmount").value = ""; // Yakıt miktarını sıfırlama
+
+        // Event listener'ları tekrar ekleyerek, fiyatın doğru şekilde güncellenmesini sağla
+        document.getElementById("GasType").addEventListener("change", updateTotalPrice);
+        document.getElementById("FuelAmount").addEventListener("input", updateTotalPrice);
+    }
+</script>

@@ -1,0 +1,96 @@
+@using System.Globalization
+@model List<StorageInfo>
+
+<body>
+    <form id="StorageForm" method="post" asp-action="AddFuel" asp-controller="Home">
+        <h3>Yakıt Ekleme</h3>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div style="color: red; background-color: #ffe0e0; padding: 10px; margin-bottom: 10px;">
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <table style="width: 100%;">
+            @foreach (var fuel in Model)
+            {
+                <tr>
+                    <td style="width: 200px;">
+                        <b>@GetFuelName(fuel.GasType)</b>
+                    </td>
+                    <td style="width: 70%;">
+                        <div class="progress" style="height: 20px; background-color: #e0e0e0;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                style="width:@( (fuel.Occupancy / (double)fuel.TotalCapacity * 100).ToString(CultureInfo.InvariantCulture) )%">
+                                @($"{(fuel.Occupancy / (double)fuel.TotalCapacity * 100):0.00}%")
+                            </div>
+
+                        </div>
+                    </td>
+                </tr>
+            }
+        </table>
+
+        <br>
+
+        <div style="display: flex; justify-content: space-around; align-items: center;">
+            <h5>Yakıt tipini seçin</h5>
+            <select id="GasType" name="GasType">
+                <option value="0">Seçiniz</option>
+                @foreach (var fuel in Model)
+                {
+                    <option value="@fuel.GasType" data-capacity="@fuel.TotalCapacity" data-occupancy="@fuel.Occupancy">
+                        @GetFuelName(fuel.GasType)
+                    </option>
+                }
+            </select>
+
+            <h5>Kaç litre eklenecek?</h5>
+            <input type="number" id="AddedFuel" name="AddedFuel" min="0" max="10000" step="0.01" />
+
+            <button type="submit" style="background-color: white; width: 100px;">Ekle</button>
+        </div>
+
+        <div id="warningMessage" style="color: red; font-weight: bold; margin-top: 10px;"></div>
+    </form>
+
+    
+</body>
+<script>
+    document.getElementById("AddedFuel").addEventListener("input", function () {
+        var selectedGasType = document.getElementById("GasType");
+        var selectedOption = selectedGasType.options[selectedGasType.selectedIndex];
+        var totalCapacity = parseFloat(selectedOption.getAttribute("data-capacity") || "10000");
+        var currentOccupancy = parseFloat(selectedOption.getAttribute("data-occupancy") || "0");
+        var addedFuel = parseFloat(this.value) || 0;
+        var availableSpace = totalCapacity - currentOccupancy;
+
+        var warningMessage = document.getElementById("warningMessage");
+
+        if (addedFuel > availableSpace) {
+            warningMessage.innerText = "⚠ Bu depoya maksimum " + availableSpace.toFixed(2) + " L eklenebilir.";
+        } else {
+            warningMessage.innerText = "";
+        }
+    });
+    @functions{
+        public string GetFuelName(int gasType)
+        {
+            return gasType switch
+            {
+                1 => "Kurşunsuz Benzin 95",
+                2 => "Motorin",
+                3 => "Gazyağı",
+                4 => "Kurşunsuz Benzin 98",
+                5 => "Fuel Oil",
+                _ => "Bilinmeyen Yakıt"
+            };
+        }
+    }
+</script>

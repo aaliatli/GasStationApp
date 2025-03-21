@@ -1,0 +1,103 @@
+@model List<StorageInfo>
+
+<body class="custom-body">
+    <div class="circle-container">
+        @foreach (var fuel in Model)
+        {
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <svg width="150" height="150" viewBox="0 0 150 150" class="progress-circle-wrapper">
+                    <circle class="progress-circle-bg"></circle>
+                    <circle class="progress-circle-fg" data-progress="@((fuel.Occupancy / (double)fuel.TotalCapacity) * 100)"></circle>
+                </svg>
+                <div style="margin-top: 10px;">
+                    <b>@GetFuelName(fuel.GasType)</b>
+                </div>
+                <div style="font-size: 14px;">
+                    @($"{(fuel.Occupancy / (double)fuel.TotalCapacity * 100):0.00}%")
+                </div>
+            </div>
+        }
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const fuelData = @Html.Raw(Json.Serialize(Model));
+            const circleWrapper = document.querySelector('.progress-circle-wrapper');
+            const computedStyles = getComputedStyle(circleWrapper);
+            const size = parseFloat(computedStyles.getPropertyValue('--size'));
+            const strokeWidth = parseFloat(computedStyles.getPropertyValue('--stroke-width'));
+            const radius = (size - strokeWidth) / 2;
+            const circumference = 2 * Math.PI * radius;
+
+            const fgCircles = document.querySelectorAll('.progress-circle-wrapper .progress-circle-fg');
+
+            fgCircles.forEach((fgCircle, index) => {
+                const progress = parseFloat(fgCircle.getAttribute('data-progress'));
+                const dashOffset = circumference - (progress / 100) * circumference;
+                
+                fgCircle.style.strokeDasharray = circumference;
+                fgCircle.style.strokeDashoffset = dashOffset;
+            });
+        });
+    </script>
+
+    <script>
+        @functions {
+            public string GetFuelName(int gasType)
+            {
+                return gasType switch
+                {
+                    1 => "Kurşunsuz Benzin 95",
+                    2 => "Motorin",
+                    3 => "Gazyağı",
+                    4 => "Kurşunsuz Benzin 98",
+                    5 => "Fuel Oil",
+                    _ => "Bilinmeyen Yakıt"
+                };
+            }
+        }
+    </script>
+</body>
+    <style>
+        :root {
+            --size: 150px;           
+            --half-size: calc(var(--size) / 2);
+            --stroke-width: 12px;      
+        }
+
+        .circle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            justify-content: center;
+            padding-top: 30px;
+        }
+
+        .custom-body .progress-circle-wrapper {
+            width: var(--size);
+            height: var(--size);
+            position: relative;
+        }
+
+        .custom-body .progress-circle-wrapper circle {
+            cx: var(--half-size);
+            cy: var(--half-size);
+            r: calc((var(--size) - var(--stroke-width)) / 2);
+            stroke-width: var(--stroke-width);
+            fill: none;
+            stroke-linecap: round;
+        }
+
+        .custom-body .progress-circle-wrapper circle.progress-circle-bg {
+            stroke: #ddd;
+            background-color: #f0f8ff;
+        }
+
+        .custom-body .progress-circle-wrapper circle.progress-circle-fg {
+            transform: rotate(-90deg);
+            transform-origin: var(--half-size) var(--half-size);
+            stroke: #ff5733;
+            stroke-dasharray: 0;
+            transition: stroke-dasharray 2s linear;
+        }
+    </style>

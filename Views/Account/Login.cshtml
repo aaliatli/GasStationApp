@@ -1,0 +1,40 @@
+@model RegisterViewModel
+
+@{
+    ViewData["Title"] = "Giriş Yap";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Giriş Yap</h2>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div style="color: red; font-style: italic;">
+        <p>*Kullanıcı mail veya şifre hatalı!</p>
+    </div>
+}
+
+<div class="Login-class">
+    
+    <form method="post" asp-action="Login" asp-controller="Account">
+    @Html.AntiForgeryToken()
+        <table class="tableEmail">
+            <tr>
+                <th>E-POSTA ADRESİNİZ</th>
+            </tr>
+            <tr>
+                <th><input type="email" placeholder="admin@example.com" id="UserEmail" name="UserEmail" required></th>
+            </tr>
+        </table>
+        <table class="tablePassword">
+            <tr>
+                <th>ŞİFRE</th>
+            </tr>
+            <tr>
+                <th><input type="password" placeholder="Şifrenizi girin" id="UserPassword" name="UserPassword" required></th>
+            </tr>
+        </table>
+        <button type="submit">Giriş Yap</button>        
+    </form>
+</div>
+

@@ -1,0 +1,66 @@
+@model List<FuelPrice>
+
+<body>
+    <form id="PriceForm" method="post" asp-action="PriceInfo" asp-controller="Home">
+        <h3>Yakıt Fiyatlarını Güncelle</h3>
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Yakıt Türü</th>
+                    <th>Fiyat (TL/Litre)</th>
+                    <th>Güncel Fiyat</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var fuel in Model)
+                {
+                    <tr>
+                        <td>@GetFuelName(fuel.GasType)</td>
+                        <td>
+                            <input type="number" id="PriceInput_@fuel.GasType" name="Prices[@fuel.GasType]" value="@fuel.PricePerLiter" step="0.01" min="0" class="fuelPriceInput" data-default="@fuel.PricePerLiter" />
+                        </td>
+                        <td id="PriceDisplay_@fuel.GasType">@fuel.PricePerLiter.ToString("F2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <br>
+        <button type="submit" style="background-color: white; width: 100px;">Fiyatları Güncelle</button>
+    </form>
+</body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const priceInputs = document.querySelectorAll(".fuelPriceInput");
+
+    priceInputs.forEach(input => {
+        input.addEventListener("input", function () {
+            let inputValue = input.value.replace(',', '.'); 
+
+            if (inputValue) {
+                document.getElementById("PriceDisplay_" + input.id.split('_')[1]).innerText = parseFloat(inputValue).toFixed(2);
+            } else {
+                let defaultValue = input.getAttribute('data-default');
+                document.getElementById("PriceDisplay_" + input.id.split('_')[1]).innerText = parseFloat(defaultValue).toFixed(2);
+            }
+        });
+    });
+});
+
+</script>
+
+@functions {
+    public string GetFuelName(int gasType)
+    {
+        return gasType switch
+        {
+            1 => "Kurşunsuz Benzin 95",
+            2 => "Motorin",
+            3 => "Gazyağı",
+            4 => "Kurşunsuz Benzin 98",
+            5 => "Fuel Oil",
+            _ => "Bilinmeyen Yakıt"
+        };
+    }
+}
