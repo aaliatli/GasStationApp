@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GasStationApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aa4cdb1eafe8dad5fc578575f0171a1680084ab4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e00c477df077a5e94c09415ca7937accde1bb0a")]
 [assembly: System.Reflection.AssemblyProductAttribute("GasStationApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GasStationApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
