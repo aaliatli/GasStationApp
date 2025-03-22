@@ -118,9 +118,9 @@ namespace GasStationApp.Controllers
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Kullanıcı ID'sini ekledik
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
                 new Claim(ClaimTypes.Name, user.UserNameLastName),
-                new Claim(ClaimTypes.Email, user.UserEmail ?? string.Empty) // Null kontrolü ekledik
+                new Claim(ClaimTypes.Email, user.UserEmail ?? string.Empty) 
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
