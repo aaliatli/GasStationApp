@@ -126,26 +126,22 @@
         const fuelAmount = parseFloat(document.getElementById("FuelAmount").value);
         const fuelList = document.getElementById("fuelList");
 
-        // Satılacak yakıt türü ve miktarı boş değilse listeye ekle
         if (gasType > 0 && fuelAmount > 0) {
             const fuelName = document.querySelector(`#GasType option[value='${gasType}']`).text;
             const listItem = document.createElement("li");
             listItem.textContent = `${fuelName} - ${fuelAmount} L`;
             fuelList.appendChild(listItem);
 
-            // Satış işlemi yapılması
             event.preventDefault(); // Formun varsayılan davranışını engelleme
             document.getElementById("Storage").submit(); // Formu manuel olarak gönder
         } else {
             alert("Lütfen geçerli bir yakıt tipi ve miktar girin.");
         }
 
-        // İşlem sonrası fiyat ve seçilen yakıtı sıfırla
         document.getElementById("TotalPrice").innerText = "0.00";
-        document.getElementById("GasType").value = "0"; // Yakıt tipini sıfırlama
-        document.getElementById("FuelAmount").value = ""; // Yakıt miktarını sıfırlama
+        document.getElementById("GasType").value = "0"; 
+        document.getElementById("FuelAmount").value = ""; 
 
-        // Event listener'ları tekrar ekleyerek, fiyatın doğru şekilde güncellenmesini sağla
         document.getElementById("GasType").addEventListener("change", updateTotalPrice);
         document.getElementById("FuelAmount").addEventListener("input", updateTotalPrice);
     }
